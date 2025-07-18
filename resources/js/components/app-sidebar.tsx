@@ -1,44 +1,35 @@
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
+import { type NavItem, type Auth } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, FileText, BarChart3 } from 'lucide-react';
+import { FileText, BarChart3, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
-const mainNavItems: NavItem[] = [
-  /*  {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    }, */
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: BarChart3,
-    },
-    {
-        title: 'Solicitudes',
-        href: '/solicitudes',
-        icon: FileText,
-    },
-];
+interface AppSidebarProps {
+    auth?: Auth;
+}
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repositorio',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentación',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
+export function AppSidebar({ auth }: AppSidebarProps) {
+    const mainNavItems: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: '/dashboard',
+            icon: BarChart3,
+        },
+        {
+            title: 'Solicitudes',
+            href: '/solicitudes',
+            icon: FileText,
+        },
+        // Solo mostrar usuarios si es super admin
+        ...(auth?.isSuperAdmin ? [{
+            title: 'Usuarios',
+            href: '/usuarios',
+            icon: Users,
+        }] : []),
+    ];
 
-export function AppSidebar() {
     return (
         <Sidebar collapsible="icon" variant="inset" className="  backdrop-blur-lg border-r border-white/50 shadow-xl shadow-blue-200/30">
             <SidebarHeader className="bg-gradient-to-r  backdrop-blur-sm border-b border-white/30 shadow-lg">
