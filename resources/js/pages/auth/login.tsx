@@ -102,6 +102,18 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         {processing && <LoaderCircle className="h-5 w-5 animate-spin mr-2" />}
                         Iniciar sesión
                     </Button>
+
+                    <div className="text-center mt-6">
+                        <p className="text-sm text-gray-600">
+                            ¿No tienes cuenta?{' '}
+                            <TextLink 
+                                href={route('register')} 
+                                className="font-semibold text-blue-600 hover:text-purple-600 transition-colors duration-300"
+                            >
+                                Crear cuenta
+                            </TextLink>
+                        </p>
+                    </div>
                 </div>
 
               
