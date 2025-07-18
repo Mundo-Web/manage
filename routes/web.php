@@ -18,7 +18,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('dashboard.solicitudes');
 
     // Rutas de Solicitudes
-    Route::resource('solicitudes', App\Http\Controllers\SolicitudController::class);
+    Route::resource('solicitudes', App\Http\Controllers\SolicitudController::class)
+        ->parameters(['solicitudes' => 'solicitud']);
     
     // Ruta especial para actualizar solo el estado (super-admin only)
     Route::patch('/solicitudes/{solicitud}/status', [App\Http\Controllers\SolicitudController::class, 'updateStatus'])

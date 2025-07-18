@@ -4,6 +4,8 @@ import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SolicitudModal } from '@/components/solicitud-modal';
+import { ConfirmationModal } from '@/components/confirmation-modal';
+import { Pagination } from '@/components/pagination';
 import { useToast } from '@/hooks/use-toast';
 import { ToastProvider } from '@/components/ui/toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -75,6 +77,8 @@ export default function SolicitudesIndex({
 }: SolicitudesPageProps) {
     const [modalOpen, setModalOpen] = useState(false);
     const [editingSolicitud, setEditingSolicitud] = useState<Solicitud | null>(null);
+    const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+    const [solicitudToDelete, setSolicitudToDelete] = useState<Solicitud | null>(null);
     const { toast } = useToast();
 
     const handleStatusUpdate = (solicitud: Solicitud, newStatus: string) => {
@@ -124,28 +128,63 @@ export default function SolicitudesIndex({
     };
 
     const handleEdit = (solicitud: Solicitud) => {
-        setEditingSolicitud(solicitud);
-        setModalOpen(true);
+        // Estrategia más suave para cerrar dropdowns sin interferir con React
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement) {
+            activeElement.blur();
+        }
+        
+        // Cerrar dropdowns usando evento ESC (más compatible con React)
+        const escEvent = new KeyboardEvent('keydown', {
+            key: 'Escape',
+            keyCode: 27,
+            which: 27,
+            bubbles: true
+        });
+        document.dispatchEvent(escEvent);
+        
+        // Timeout más corto para abrir el modal
+        setTimeout(() => {
+            setEditingSolicitud(solicitud);
+            setModalOpen(true);
+        }, 50);
     };
 
     const handleDelete = (solicitud: Solicitud) => {
-        if (confirm(`¿Estás seguro de que quieres eliminar la solicitud de ${solicitud.nombre_cliente}?`)) {
-            router.delete(route('solicitudes.destroy', solicitud.id), {
-                onSuccess: () => {
-                    toast({
-                        title: "Solicitud eliminada",
-                        description: `La solicitud de ${solicitud.nombre_cliente} ha sido eliminada correctamente.`,
-                    });
-                },
-                onError: () => {
-                    toast({
-                        title: "Error",
-                        description: "No se pudo eliminar la solicitud. Intenta de nuevo.",
-                        variant: "destructive",
-                    });
-                }
-            });
-        }
+        setSolicitudToDelete(solicitud);
+        setConfirmModalOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (!solicitudToDelete) return;
+        
+        router.delete(route('solicitudes.destroy', solicitudToDelete.id), {
+            onSuccess: () => {
+                toast({
+                    title: "Solicitud eliminada",
+                    description: `La solicitud de ${solicitudToDelete.nombre_cliente} ha sido eliminada correctamente.`,
+                });
+                setSolicitudToDelete(null);
+            },
+            onError: () => {
+                toast({
+                    title: "Error",
+                    description: "No se pudo eliminar la solicitud. Intenta de nuevo.",
+                    variant: "destructive",
+                });
+            }
+        });
+    };
+
+    const cancelDelete = () => {
+        setSolicitudToDelete(null);
+    };
+
+    const handlePageChange = (url: string) => {
+        router.get(url, {}, {
+            preserveState: true,
+            preserveScroll: true
+        });
     };
 
     const handleModalSuccess = () => {
@@ -155,6 +194,12 @@ export default function SolicitudesIndex({
                 ? "Los cambios han sido guardados correctamente."
                 : "La nueva solicitud ha sido creada exitosamente.",
         });
+        
+        // Recargar solo los datos sin refrescar toda la página
+        router.reload({
+            only: ['solicitudes']
+        });
+        
         setEditingSolicitud(null);
     };
 
@@ -242,28 +287,28 @@ export default function SolicitudesIndex({
             case 'pendiente':
                 return (
                     <Badge className="bg-gradient-to-r from-yellow-200/80 to-yellow-300/80 text-yellow-900 hover:from-yellow-300/80 hover:to-yellow-400/80 border-0 rounded-2xl px-4 py-2 font-bold shadow-lg shadow-yellow-200/50 backdrop-blur-sm flex items-center gap-2">
-                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-clock w-4 h-4"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock w-4 h-4"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                         Pendiente
                     </Badge>
                 );
             case 'en_diseño':
                 return (
                     <Badge className="bg-gradient-to-r from-blue-200/80 to-blue-300/80 text-blue-900 hover:from-blue-300/80 hover:to-blue-400/80 border-0 rounded-2xl px-4 py-2 font-bold shadow-lg shadow-blue-200/50 backdrop-blur-sm flex items-center gap-2">
-                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-palette w-4 h-4"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg>
+                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-palette w-4 h-4"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg>
                         En Diseño
                     </Badge>
                 );
             case 'en_programación':
                 return (
                     <Badge className="bg-gradient-to-r from-purple-200/80 to-purple-300/80 text-purple-900 hover:from-purple-300/80 hover:to-purple-400/80 border-0 rounded-2xl px-4 py-2 font-bold shadow-lg shadow-purple-200/50 backdrop-blur-sm flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-code w-4 h-4"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-code w-4 h-4"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
                         En Programación
                     </Badge>
                 );
             case 'completada':
                 return (
                     <Badge className="bg-gradient-to-r from-green-200/80 to-green-300/80 text-green-900 hover:from-green-300/80 hover:to-green-400/80 border-0 rounded-2xl px-4 py-2 font-bold shadow-lg shadow-green-200/50 backdrop-blur-sm flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-circle-check-big w-4 h-4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><path d="m9 11 3 3L22 4"></path></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-check-big w-4 h-4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><path d="m9 11 3 3L22 4"></path></svg>
                         Completada
                     </Badge>
                 );
@@ -489,16 +534,27 @@ export default function SolicitudesIndex({
                                                                 <MoreHorizontal className="h-5 w-5 text-gray-700" />
                                                             </Button>
                                                         </DropdownMenuTrigger>
-                                                        <DropdownMenuContent className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl border border-white/50 p-2">
+                                                        <DropdownMenuContent 
+                                                            className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl border border-white/50 p-2"
+                                                            onCloseAutoFocus={(e) => e.preventDefault()}
+                                                        >
                                                             <DropdownMenuItem
-                                                                onClick={() => handleEdit(solicitud)}
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    handleEdit(solicitud);
+                                                                }}
                                                                 className="rounded-xl hover:bg-blue-100/80 text-gray-700 font-medium"
                                                             >
                                                                 <Edit3 className="h-4 w-4 mr-3" />
                                                                 Editar
                                                             </DropdownMenuItem>
                                                             <DropdownMenuItem
-                                                                onClick={() => handleDelete(solicitud)}
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    handleDelete(solicitud);
+                                                                }}
                                                                 className="rounded-xl hover:bg-red-100/80 text-red-600 font-medium"
                                                             >
                                                                 <Trash2 className="h-4 w-4 mr-3" />
@@ -589,9 +645,16 @@ export default function SolicitudesIndex({
                                                                 <MoreHorizontal className="h-5 w-5 text-gray-700" />
                                                             </Button>
                                                         </DropdownMenuTrigger>
-                                                        <DropdownMenuContent className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl border border-white/50 p-2">
+                                                        <DropdownMenuContent 
+                                                            className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl border border-white/50 p-2"
+                                                            onCloseAutoFocus={(e) => e.preventDefault()}
+                                                        >
                                                             <DropdownMenuItem
-                                                                onClick={() => handleEdit(solicitud)}
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    handleEdit(solicitud);
+                                                                }}
                                                                 className="rounded-xl hover:bg-blue-100/80 text-gray-700 font-medium"
                                                             >
                                                                 <Edit3 className="h-4 w-4 mr-3" />
@@ -614,6 +677,18 @@ export default function SolicitudesIndex({
                             </div>
                         </div>
                     </div>
+
+                    {/* Paginación */}
+                    <div className="max-w-7xl mx-auto mt-8">
+                       
+                        {solicitudes?.meta && (
+                            <Pagination 
+                                links={solicitudes.links || []}
+                                meta={solicitudes.meta}
+                                onPageChange={handlePageChange}
+                            />
+                        )}
+                    </div>
                 </div>
 
                 {/* Modal */}
@@ -629,6 +704,19 @@ export default function SolicitudesIndex({
                     estados={estados}
                     prioridades={prioridades}
                     onSuccess={handleModalSuccess}
+                />
+
+                {/* Modal de Confirmación de Eliminación */}
+                <ConfirmationModal
+                    open={confirmModalOpen}
+                    onOpenChange={setConfirmModalOpen}
+                    title="Eliminar Solicitud"
+                    description={`¿Estás seguro de que quieres eliminar la solicitud de ${solicitudToDelete?.nombre_cliente}? Esta acción no se puede deshacer.`}
+                    confirmText="Sí, eliminar"
+                    cancelText="Cancelar"
+                    variant="destructive"
+                    onConfirm={confirmDelete}
+                    onCancel={cancelDelete}
                 />
             </AppLayout>
         </ToastProvider>

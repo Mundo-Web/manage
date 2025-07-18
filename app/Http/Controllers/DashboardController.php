@@ -14,8 +14,8 @@ class DashboardController extends Controller
         // Obtener estadísticas generales
         $totalSolicitudes = Solicitud::count();
         $solicitudesPendientes = Solicitud::where('estado', 'pendiente')->count();
-        $solicitudesEnProceso = Solicitud::where('estado', 'en_proceso')->count();
-        $solicitudesCompletadas = Solicitud::where('estado', 'completado')->count();
+        $solicitudesEnProceso = Solicitud::whereIn('estado', ['en_diseño', 'en_programación'])->count();
+        $solicitudesCompletadas = Solicitud::where('estado', 'completada')->count();
         
         // Solicitudes de este mes
         $solicitudesEsteMes = Solicitud::whereMonth('fecha_creacion', Carbon::now()->month)

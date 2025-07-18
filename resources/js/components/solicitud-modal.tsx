@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 import { FormEventHandler, useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,6 +67,79 @@ export function SolicitudModal({
             clearErrors();
         }
     }, [open, solicitud, setData, reset, clearErrors]);
+
+    // Cleanup effect cuando el modal se cierra
+    useEffect(() => {
+        let cleanupTimer: NodeJS.Timeout;
+        
+        if (!open) {
+            // Función de limpieza completamente segura
+            const performSafeCleanup = () => {
+                // Usar requestAnimationFrame para asegurar que React termine su reconciliación
+                requestAnimationFrame(() => {
+                    try {
+                        // Limpiar overlays de manera más específica
+                        const selectors = [
+                            '[data-radix-popper-content-wrapper]',
+                            '[data-radix-dropdown-menu-content]', 
+                            '[data-radix-select-content]',
+                            '[data-radix-portal]',
+                            '.radix-popper'
+                        ];
+                        
+                        selectors.forEach(selector => {
+                            const elements = document.querySelectorAll(selector);
+                            elements.forEach(element => {
+                                try {
+                                    // Verificar si el elemento aún está en el DOM antes de intentar eliminarlo
+                                    if (document.contains(element) && element.parentElement) {
+                                        element.parentElement.removeChild(element);
+                                    }
+                                } catch (error) {
+                                    // Silencioso - elemento ya removido o no accesible
+                                }
+                            });
+                        });
+                        
+                        // Restaurar estilos del body de forma segura
+                        Object.assign(document.body.style, {
+                            overflow: '',
+                            paddingRight: '',
+                            pointerEvents: '',
+                            position: '',
+                            top: ''
+                        });
+                        
+                        // Limpiar atributos inert de forma segura
+                        document.querySelectorAll('[inert]').forEach(el => {
+                            try {
+                                el.removeAttribute('inert');
+                            } catch (error) {
+                                // Silencioso
+                            }
+                        });
+                        
+                    } catch (error) {
+                        // Log solo en desarrollo, silencioso en producción
+                        if (process.env.NODE_ENV === 'development') {
+                            console.debug('Modal cleanup handled:', error);
+                        }
+                    }
+                });
+            };
+
+            // Limpiar inmediatamente y después con timeout
+            performSafeCleanup();
+            cleanupTimer = setTimeout(performSafeCleanup, 100);
+        }
+        
+        // Cleanup del timer cuando el componente se desmonte
+        return () => {
+            if (cleanupTimer) {
+                clearTimeout(cleanupTimer);
+            }
+        };
+    }, [open]);
 
     // Funciones para manejo de archivos
     const handleFileChange = (file: File | null, type: 'pdf' | 'logo') => {
@@ -171,31 +244,129 @@ export function SolicitudModal({
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         
-        const url = isEditing ? route('solicitudes.update', solicitud.id) : route('solicitudes.store');
-        
-        post(url, {
-            forceFormData: true,
-            onSuccess: () => {
-                onOpenChange(false);
-                reset();
-                onSuccess?.();
-            },
-        });
+        if (isEditing) {
+            // Verificar que tenemos una solicitud válida
+            if (!solicitud?.id) {
+                console.error('No se puede editar: solicitud ID no encontrado', solicitud);
+                return;
+            }
+            
+            // Para edición, enviar como objeto regular si no hay archivos nuevos
+            if (!data.archivo_pdf && !data.logo) {
+                // Sin archivos nuevos, enviar como objeto regular
+                const updateData = {
+                    nombre_cliente: data.nombre_cliente,
+                    nombre_landing: data.nombre_landing,
+                    nombre_producto: data.nombre_producto,
+                    prioridad: data.prioridad,
+                };
+                
+                console.log('Enviando datos de actualización (objeto):', {
+                    ...updateData,
+                    solicitud_id: solicitud?.id,
+                    url: route('solicitudes.update', solicitud?.id)
+                });
+                
+                router.put(route('solicitudes.update', solicitud.id), updateData, {
+                    onSuccess: (page) => {
+                        console.log('Update successful:', page);
+                        handleClose();
+                        onSuccess?.();
+                    },
+                    onError: (errors) => {
+                        console.error('Update errors:', errors);
+                    },
+                    onFinish: () => {
+                        console.log('Update request finished');
+                    }
+                });
+            } else {
+                // Con archivos, usar FormData
+                const formData = new FormData();
+                formData.append('nombre_cliente', data.nombre_cliente);
+                formData.append('nombre_landing', data.nombre_landing);
+                formData.append('nombre_producto', data.nombre_producto);
+                formData.append('prioridad', data.prioridad);
+                
+                if (data.archivo_pdf) {
+                    formData.append('archivo_pdf', data.archivo_pdf);
+                }
+                if (data.logo) {
+                    formData.append('logo', data.logo);
+                }
+                
+                console.log('Enviando datos de actualización (FormData):', {
+                    nombre_cliente: data.nombre_cliente,
+                    nombre_landing: data.nombre_landing,
+                    nombre_producto: data.nombre_producto,
+                    prioridad: data.prioridad,
+                    solicitud_id: solicitud?.id,
+                    url: route('solicitudes.update', solicitud?.id),
+                    hasFiles: !!(data.archivo_pdf || data.logo)
+                });
+                
+                router.post(route('solicitudes.update', solicitud.id), formData, {
+                    forceFormData: true,
+                    headers: {
+                        'X-HTTP-Method-Override': 'PUT'
+                    },
+                    onSuccess: (page) => {
+                        console.log('Update successful:', page);
+                        handleClose();
+                        onSuccess?.();
+                    },
+                    onError: (errors) => {
+                        console.error('Update errors:', errors);
+                    },
+                    onFinish: () => {
+                        console.log('Update request finished');
+                    }
+                });
+            }
+        } else {
+            // Para creación, usar el método normal
+            post(route('solicitudes.store'), {
+                forceFormData: true,
+                onSuccess: () => {
+                    handleClose();
+                    onSuccess?.();
+                },
+            });
+        }
     };
 
     const handleClose = () => {
-        onOpenChange(false);
+        // Primero limpiar el estado del modal
         reset();
         clearErrors();
         setPdfPreview(null);
         setLogoPreview(null);
         setIsDraggingPdf(false);
         setIsDraggingLogo(false);
+        
+        // Usar requestAnimationFrame para asegurar que React termine su ciclo
+        requestAnimationFrame(() => {
+            onOpenChange(false);
+        });
+    };
+
+    const handleOpenChange = (newOpen: boolean) => {
+        if (!newOpen) {
+            // Solo llamar handleClose, no hacer onOpenChange inmediatamente
+            handleClose();
+        } else {
+            // Para abrir, llamar directamente onOpenChange
+            onOpenChange(newOpen);
+        }
     };
 
     return (
-        <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="max-w-3xl min-w-2xl max-h-[90vh] flex flex-col bg-gradient-to-br from-white/90 to-blue-50/90 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-blue-200/30 scrollbar-thin scrollbar-track-blue-50/30 scrollbar-thumb-blue-300/50 hover:scrollbar-thumb-blue-400/70 scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+            <DialogContent className="max-w-3xl min-w-2xl max-h-[90vh] flex flex-col bg-gradient-to-br from-white/90 to-blue-50/90 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl shadow-blue-200/30 scrollbar-thin scrollbar-track-blue-50/30 scrollbar-thumb-blue-300/50 hover:scrollbar-thumb-blue-400/70 scrollbar-thumb-rounded-full scrollbar-track-rounded-full z-50" 
+                onEscapeKeyDown={handleClose}
+                onPointerDownOutside={handleClose}
+                onInteractOutside={handleClose}
+            >
                 <DialogHeader className="pb-6 flex-shrink-0">
                     <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-700 bg-clip-text text-transparent">
                         {isEditing ? 'Editar Solicitud' : 'Nueva Solicitud'}

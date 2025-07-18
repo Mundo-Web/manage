@@ -7,6 +7,7 @@ use App\Models\Solicitud;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,13 +37,44 @@ class SolicitudController extends Controller
             $query->where('prioridad', $request->prioridad);
         }
 
-        $solicitudes = $query->orderBy('fecha_creacion', 'desc')->get();
-
-                // Get paginated solicitudes
+        // Get paginated solicitudes (10 per page)
         $solicitudes = $query->latest('fecha_creacion')->paginate(10);
 
+        // Debug: Log what we're sending to frontend
+        Log::info('Pagination debug', [
+            'current_page' => $solicitudes->currentPage(),
+            'last_page' => $solicitudes->lastPage(),
+            'total' => $solicitudes->total(),
+            'per_page' => $solicitudes->perPage(),
+            'has_links' => method_exists($solicitudes, 'links'),
+            'links_count' => count($solicitudes->linkCollection()),
+            'solicitudes_structure' => [
+                'data' => count($solicitudes->items()),
+                'links' => count($solicitudes->linkCollection()),
+                'meta' => [
+                    'current_page' => $solicitudes->currentPage(),
+                    'last_page' => $solicitudes->lastPage(),
+                    'total' => $solicitudes->total(),
+                ]
+            ]
+        ]);
+
+        // Manually structure the pagination data for Inertia
+        $paginationData = [
+            'data' => $solicitudes->items(),
+            'links' => $solicitudes->linkCollection()->toArray(),
+            'meta' => [
+                'current_page' => $solicitudes->currentPage(),
+                'last_page' => $solicitudes->lastPage(),
+                'total' => $solicitudes->total(),
+                'per_page' => $solicitudes->perPage(),
+                'from' => $solicitudes->firstItem(),
+                'to' => $solicitudes->lastItem(),
+            ]
+        ];
+
         return Inertia::render('solicitudes/index', [
-            'solicitudes' => $solicitudes,
+            'solicitudes' => $paginationData,
             'filters' => [
                 'search' => $request->search,
                 'estado' => $request->estado,
@@ -114,12 +146,39 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
+        // Log detallado para debug
+        Log::info('Update method called', [
+            'route_params' => $request->route()->parameters(),
+            'request_method' => $request->method(),
+            'request_url' => $request->url(),
+            'request_all' => $request->all(),
+            'request_input' => $request->input(),
+            'files' => $request->allFiles(),
+            'content_type' => $request->header('Content-Type'),
+            'solicitud_id' => $solicitud?->id,
+            'solicitud_exists' => $solicitud->exists,
+            'user_id' => $user->id
+        ]);
+
+        // Verificar que la solicitud existe y tiene ID
+        if (!$solicitud->exists || !$solicitud->id) {
+            Log::error('Solicitud not found or has no ID', [
+                'solicitud_exists' => $solicitud->exists,
+                'solicitud_id' => $solicitud->id,
+                'route_params' => $request->route()->parameters()
+            ]);
+            abort(404, 'Solicitud no encontrada');
+        }
+
         // Check permissions
         if (!$user->hasAnyRole(['admin', 'super-admin']) && $solicitud->user_id !== $user->id) {
             abort(403, 'No tienes permisos para editar esta solicitud.');
         }
 
         $data = $request->validated();
+        
+        // Remove estado from update data as it's handled separately
+        unset($data['estado']);
 
         // Handle file uploads
         if ($request->hasFile('archivo_pdf')) {
@@ -138,7 +197,19 @@ class SolicitudController extends Controller
             $data['logo'] = $request->file('logo')->store('solicitudes/logos', 'public');
         }
 
-        $solicitud->update($data);
+        Log::info('About to update solicitud', [
+            'solicitud_id' => $solicitud->id,
+            'data_to_update' => $data
+        ]);
+
+        // Perform the update
+        $updated = $solicitud->update($data);
+        
+        Log::info('Solicitud update result', [
+            'updated' => $updated,
+            'solicitud_id' => $solicitud->id,
+            'solicitud_after' => $solicitud->fresh()->toArray()
+        ]);
 
         return redirect()->route('solicitudes.index')
             ->with('success', 'Solicitud actualizada exitosamente.');

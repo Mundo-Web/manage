@@ -21,15 +21,23 @@ class SolicitudRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'nombre_cliente' => ['required', 'string', 'max:255'],
             'nombre_landing' => ['required', 'string', 'max:255'],
             'nombre_producto' => ['required', 'string', 'max:255'],
-            'estado' => ['required', 'in:pendiente,en_diseño,en_programación,completada'],
             'prioridad' => ['required', 'in:alta,media,baja'],
             'archivo_pdf' => ['nullable', 'file', 'mimes:pdf', 'max:10240'], // 10MB max
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg', 'max:5120'], // 5MB max
         ];
+
+        // Solo requerir estado en creación, no en actualización
+        if ($this->isMethod('post')) {
+            $rules['estado'] = ['required', 'in:pendiente,en_diseño,en_programación,completada'];
+        } else {
+            $rules['estado'] = ['sometimes', 'in:pendiente,en_diseño,en_programación,completada'];
+        }
+
+        return $rules;
     }
 
     /**
