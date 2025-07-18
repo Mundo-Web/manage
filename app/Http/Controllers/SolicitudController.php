@@ -227,10 +227,10 @@ class SolicitudController extends Controller
             abort(403, 'No tienes permisos para eliminar solicitudes.');
         }
 
-        // Protect completed requests from deletion
-        if ($solicitud->isCompletada()) {
+        // Only super-admin can delete completed requests
+        if ($solicitud->isCompletada() && !$user->hasRole('super-admin')) {
             return redirect()->route('solicitudes.index')
-                ->withErrors(['error' => 'No se pueden eliminar solicitudes completadas.']);
+                ->withErrors(['error' => 'Solo el super-admin puede eliminar solicitudes completadas.']);
         }
 
         // Delete associated files

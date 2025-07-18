@@ -588,7 +588,9 @@ export default function SolicitudesIndex({
                                             <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Fecha entregada</TableHead>
                                             <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Estado</TableHead>
                                             <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Prioridad</TableHead>
-                                         
+                                            {auth.isSuperAdmin && (
+                                                <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Acciones</TableHead>
+                                            )}
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -611,8 +613,7 @@ export default function SolicitudesIndex({
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="py-6">
-                                                                                                          <div className="text-sm text-gray-600 font-medium">Finalizado {formatDate(solicitud.updated_at)}</div>
-
+                                                    <div className="text-sm text-gray-600 font-medium">Finalizado {formatDate(solicitud.updated_at)}</div>
                                                 </TableCell>
                                                 <TableCell className="py-6">
                                                     {getEstadoBadge(solicitud.estado)}
@@ -620,12 +621,54 @@ export default function SolicitudesIndex({
                                                 <TableCell className="py-6">
                                                     {getPrioridadBadge(solicitud.prioridad)}
                                                 </TableCell>
-                                              
+                                                {auth.isSuperAdmin && (
+                                                    <TableCell className="py-6">
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-10 w-10 p-0 bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 rounded-xl shadow-lg border-0 transform hover:scale-105 transition-all duration-300"
+                                                                >
+                                                                    <MoreHorizontal className="h-5 w-5 text-gray-700" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent
+                                                                className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl border border-white/50 p-2"
+                                                                onCloseAutoFocus={(e) => e.preventDefault()}
+                                                            >
+                                                                <DropdownMenuItem
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        handleEdit(solicitud);
+                                                                    }}
+                                                                    className="rounded-xl hover:bg-blue-100/80 text-gray-700 font-medium"
+                                                                >
+                                                                    <Edit3 className="h-4 w-4 mr-3" />
+                                                                    Editar
+                                                                </DropdownMenuItem>
+                                                                {/* Solo mostrar eliminar para super admin */}
+                                                                <DropdownMenuItem
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        handleDelete(solicitud);
+                                                                    }}
+                                                                    className="rounded-xl hover:bg-red-100/80 text-red-600 font-medium"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4 mr-3" />
+                                                                    Eliminar
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </TableCell>
+                                                )}
                                             </TableRow>
                                         ))}
                                         {proyectosCompletados.length === 0 && (
                                             <TableRow>
-                                                <TableCell colSpan={7} className="text-center py-12 text-gray-600 font-semibold text-lg">
+                                                <TableCell colSpan={auth.isSuperAdmin ? 6 : 5} className="text-center py-12 text-gray-600 font-semibold text-lg">
                                                     No hay proyectos completados
                                                 </TableCell>
                                             </TableRow>
