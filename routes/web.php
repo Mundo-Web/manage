@@ -9,12 +9,12 @@ Route::get('/', [AuthenticatedSessionController::class, 'create'])
         ->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function () {
+  /*  Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
-
+ */
     // Dashboard de solicitudes
-    Route::get('/dashboard/solicitudes', [App\Http\Controllers\DashboardController::class, 'solicitudes'])
+    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'solicitudes'])
         ->name('dashboard.solicitudes');
 
     // Rutas de Solicitudes

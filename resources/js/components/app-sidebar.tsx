@@ -15,7 +15,7 @@ const mainNavItems: NavItem[] = [
     }, */
     {
         title: 'Dashboard',
-        href: '/dashboard/solicitudes',
+        href: '/dashboard',
         icon: BarChart3,
     },
     {
@@ -45,7 +45,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild className="">
-                            <Link href="/dashboard/solicitudes" prefetch className="rounded-3xl overflow-hidden !p-0">
+                            <Link href="/dashboard" prefetch className="rounded-3xl overflow-hidden !p-0">
                                
                                     <AppLogo />
 
