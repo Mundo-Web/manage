@@ -133,7 +133,7 @@ export default function SolicitudesIndex({
         if (activeElement) {
             activeElement.blur();
         }
-        
+
         // Cerrar dropdowns usando evento ESC (más compatible con React)
         const escEvent = new KeyboardEvent('keydown', {
             key: 'Escape',
@@ -142,7 +142,7 @@ export default function SolicitudesIndex({
             bubbles: true
         });
         document.dispatchEvent(escEvent);
-        
+
         // Timeout más corto para abrir el modal
         setTimeout(() => {
             setEditingSolicitud(solicitud);
@@ -157,7 +157,7 @@ export default function SolicitudesIndex({
 
     const confirmDelete = () => {
         if (!solicitudToDelete) return;
-        
+
         router.delete(route('solicitudes.destroy', solicitudToDelete.id), {
             onSuccess: () => {
                 toast({
@@ -194,12 +194,12 @@ export default function SolicitudesIndex({
                 ? "Los cambios han sido guardados correctamente."
                 : "La nueva solicitud ha sido creada exitosamente.",
         });
-        
+
         // Recargar solo los datos sin refrescar toda la página
         router.reload({
             only: ['solicitudes']
         });
-        
+
         setEditingSolicitud(null);
     };
 
@@ -232,12 +232,12 @@ export default function SolicitudesIndex({
     // Componente para el avatar del cliente
     const ClientAvatar = ({ solicitud }: { solicitud: Solicitud }) => {
         const [imageError, setImageError] = useState(false);
-        
+
         if (solicitud.logo && !imageError) {
             return (
                 <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg border-2 border-white/20 bg-gray-100">
-                    <img 
-                        src={`/storage/${solicitud.logo}`} 
+                    <img
+                        src={`/storage/${solicitud.logo}`}
                         alt={`Logo de ${solicitud.nombre_cliente}`}
                         className="w-full h-full object-cover"
                         onError={() => setImageError(true)}
@@ -287,21 +287,21 @@ export default function SolicitudesIndex({
             case 'pendiente':
                 return (
                     <Badge className="bg-gradient-to-r from-yellow-200/80 to-yellow-300/80 text-yellow-900 hover:from-yellow-300/80 hover:to-yellow-400/80 border-0 rounded-2xl px-4 py-2 font-bold shadow-lg shadow-yellow-200/50 backdrop-blur-sm flex items-center gap-2">
-                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock w-4 h-4"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock w-4 h-4"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                         Pendiente
                     </Badge>
                 );
             case 'en_diseño':
                 return (
                     <Badge className="bg-gradient-to-r from-blue-200/80 to-blue-300/80 text-blue-900 hover:from-blue-300/80 hover:to-blue-400/80 border-0 rounded-2xl px-4 py-2 font-bold shadow-lg shadow-blue-200/50 backdrop-blur-sm flex items-center gap-2">
-                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-palette w-4 h-4"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-palette w-4 h-4"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg>
                         En Diseño
                     </Badge>
                 );
             case 'en_programación':
                 return (
                     <Badge className="bg-gradient-to-r from-purple-200/80 to-purple-300/80 text-purple-900 hover:from-purple-300/80 hover:to-purple-400/80 border-0 rounded-2xl px-4 py-2 font-bold shadow-lg shadow-purple-200/50 backdrop-blur-sm flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-code w-4 h-4"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-code w-4 h-4"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
                         En Programación
                     </Badge>
                 );
@@ -346,30 +346,7 @@ export default function SolicitudesIndex({
 
                 <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6">
                     <div className="max-w-7xl mx-auto space-y-8">
-                        {/* Header */}
-                        <div className="flex items-center justify-between bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-lg shadow-blue-200/50 border border-white/50">
-                            <div className="flex items-center gap-4">
-                                <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center shadow-inner">
-                                    <img src="/logo.png" alt="Logo" className="w-auto h-12 object-cover" />
-                                </div>
-                                <div>
-                                    <h1 className="text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent drop-shadow-sm" style={{fontWeight: 900}}>
-                                        Mundo Web
-                                    </h1>
-                                    <p className="text-lg text-gray-600 font-medium">Solicitudes de Landing Page</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-
-                                <Button
-                                    onClick={() => setModalOpen(true)}
-                                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-2xl px-6 py-3 shadow-lg shadow-blue-300/50 border-0 transform hover:scale-105 transition-all duration-300 font-semibold"
-                                >
-                                    <Plus className="w-5 h-5 mr-2" />
-                                    Nueva Solicitud
-                                </Button>
-                            </div>
-                        </div>
+                       
 
                         {/* Filtros */}
                         <div className="bg-white/60 backdrop-blur-lg rounded-3xl p-6 shadow-lg shadow-purple-200/30 border border-white/50">
@@ -413,8 +390,8 @@ export default function SolicitudesIndex({
                                             {prioridades.map((prioridad) => (
                                                 <SelectItem key={prioridad} value={prioridad} className="rounded-xl hover:bg-purple-100/80 font-medium">
                                                     <span className={`inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold ${prioridad === 'alta' ? 'bg-gradient-to-r from-red-200 to-red-300 text-red-900' :
-                                                            prioridad === 'media' ? 'bg-gradient-to-r from-orange-200 to-orange-300 text-orange-900' :
-                                                                'bg-gradient-to-r from-green-200 to-green-300 text-green-900'
+                                                        prioridad === 'media' ? 'bg-gradient-to-r from-orange-200 to-orange-300 text-orange-900' :
+                                                            'bg-gradient-to-r from-green-200 to-green-300 text-green-900'
                                                         }`}>
                                                         {prioridad}
                                                     </span>
@@ -429,6 +406,13 @@ export default function SolicitudesIndex({
                                         {solicitudes?.data?.length || 0} resultados
                                     </span>
                                 </div>
+                                  <Button
+                                    onClick={() => setModalOpen(true)}
+                                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-2xl px-6 py-3 shadow-lg shadow-blue-300/50 border-0 transform hover:scale-105 transition-all duration-300 font-semibold"
+                                >
+                                    <Plus className="w-5 h-5 mr-2" />
+                                    Nueva Solicitud
+                                </Button>
                             </div>
                         </div>
 
@@ -446,41 +430,45 @@ export default function SolicitudesIndex({
                                 </div>
                             </div>
 
-                            <div className="overflow-x-auto p-6">
-                                <Table>
+                            <div className="overflow-x-auto ">
+                                <Table className='!p-0'>
                                     <TableHeader>
                                         <TableRow className="border-none">
                                             <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Cliente</TableHead>
                                             <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Proyecto</TableHead>
-                                            <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Producto</TableHead>
+                                          
                                             <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Estado</TableHead>
                                             <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Prioridad</TableHead>
-                                            <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Fecha</TableHead>
+                                           
                                             <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Acciones</TableHead>
                                         </TableRow>
                                     </TableHeader>
-                                    <TableBody>
+                                    <TableBody className='p-0'>
                                         {proyectosEnDesarrollo.map((solicitud) => (
-                                            <TableRow key={solicitud.id} className="border-none hover:bg-yellow-200/30 transition-all duration-300 rounded-2xl">
-                                                <TableCell className="py-6">
+                                            <TableRow key={solicitud.id} className={`border-none transition-all duration-300 rounded-2xl ${
+                                                solicitud.prioridad === 'alta' ? 'bg-red-200/50 hover:bg-red-200' :
+                                                solicitud.prioridad === 'media' ? 'bg-orange-200/50 hover:bg-orange-200' :
+                                                solicitud.prioridad === 'baja' ? 'bg-green-200/50  hover:bg-green-200' :
+                                                'hover:bg-gray-200/30'
+                                            }`}>
+                                                <TableCell className="pb-4">
                                                     <div className="flex items-center gap-4">
                                                         {renderClientAvatar(solicitud)}
                                                         <div>
                                                             <div className="font-bold text-gray-900 text-lg">{solicitud.nombre_cliente}</div>
                                                             <div className="text-sm text-gray-600 font-medium">{solicitud.user?.name || 'contact@cliente.com'}</div>
+                                                            <div className="text-sm text-gray-600 font-medium">Solicitud {formatDate(solicitud.fecha_creacion)}</div>
                                                         </div>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="py-6">
+                                                <TableCell className="">
                                                     <div>
                                                         <div className="font-bold text-gray-900 text-lg">{solicitud.nombre_landing}</div>
-                                                        <div className="text-sm text-gray-600 font-medium">Lanzamiento {formatDate(solicitud.fecha_creacion)}</div>
+                                                         <span className="text-sm text-gray-600 font-medium">{solicitud.nombre_producto}</span>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="py-6">
-                                                    <span className="text-gray-800 font-semibold text-base">{solicitud.nombre_producto}</span>
-                                                </TableCell>
-                                                <TableCell className="py-6">
+                                           
+                                                <TableCell className="">
                                                     {auth.isSuperAdmin ? (
                                                         <Select
                                                             value={solicitud.estado}
@@ -492,7 +480,7 @@ export default function SolicitudesIndex({
                                                             <SelectContent className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl border border-blue-200/50">
                                                                 <SelectItem value="pendiente" className="rounded-xl hover:bg-blue-100/80 font-medium">
                                                                     <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold bg-gradient-to-r from-yellow-200 to-yellow-300 text-yellow-900">
-                                                                        
+
                                                                         pendiente
                                                                     </span>
                                                                 </SelectItem>
@@ -503,7 +491,7 @@ export default function SolicitudesIndex({
                                                                 </SelectItem>
                                                                 <SelectItem value="en_programación" className="rounded-xl hover:bg-blue-100/80 font-medium">
                                                                     <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-200 to-blue-300 text-blue-900">
-                                                                       en programación
+                                                                        en programación
                                                                     </span>
                                                                 </SelectItem>
                                                                 <SelectItem value="completada" className="rounded-xl hover:bg-blue-100/80 font-medium">
@@ -517,13 +505,13 @@ export default function SolicitudesIndex({
                                                         getEstadoBadge(solicitud.estado)
                                                     )}
                                                 </TableCell>
-                                                <TableCell className="py-6">
+                                                <TableCell className="">
                                                     {getPrioridadBadge(solicitud.prioridad)}
                                                 </TableCell>
-                                                <TableCell className="py-6">
+                                                <TableCell className="">
                                                     <span className="text-sm text-gray-700 font-semibold">{formatDate(solicitud.fecha_creacion)}</span>
                                                 </TableCell>
-                                                <TableCell className="py-6">
+                                                <TableCell className="">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
                                                             <Button
@@ -534,7 +522,7 @@ export default function SolicitudesIndex({
                                                                 <MoreHorizontal className="h-5 w-5 text-gray-700" />
                                                             </Button>
                                                         </DropdownMenuTrigger>
-                                                        <DropdownMenuContent 
+                                                        <DropdownMenuContent
                                                             className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl border border-white/50 p-2"
                                                             onCloseAutoFocus={(e) => e.preventDefault()}
                                                         >
@@ -591,17 +579,16 @@ export default function SolicitudesIndex({
                                 </div>
                             </div>
 
-                            <div className="overflow-x-auto p-6">
+                            <div className="overflow-x-auto ">
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="border-none">
                                             <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Cliente</TableHead>
                                             <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Proyecto</TableHead>
-                                            <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Producto</TableHead>
+                                            <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Fecha entregada</TableHead>
                                             <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Estado</TableHead>
                                             <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Prioridad</TableHead>
-                                            <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Fecha</TableHead>
-                                            <TableHead className="text-sm font-bold text-gray-700 bg-transparent uppercase tracking-wide">Acciones</TableHead>
+                                         
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -613,17 +600,19 @@ export default function SolicitudesIndex({
                                                         <div>
                                                             <div className="font-bold text-gray-900 text-lg">{solicitud.nombre_cliente}</div>
                                                             <div className="text-sm text-gray-600 font-medium">{solicitud.user?.name || 'contact@cliente.com'}</div>
+
                                                         </div>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="py-6">
                                                     <div>
                                                         <div className="font-bold text-gray-900 text-lg">{solicitud.nombre_landing}</div>
-                                                        <div className="text-sm text-gray-600 font-medium">Finalizado {formatDate(solicitud.fecha_creacion)}</div>
+                                                           <span className="text-sm text-gray-600 font-medium">{solicitud.nombre_producto}</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="py-6">
-                                                    <span className="text-gray-800 font-semibold text-base">{solicitud.nombre_producto}</span>
+                                                                                                          <div className="text-sm text-gray-600 font-medium">Finalizado {formatDate(solicitud.updated_at)}</div>
+
                                                 </TableCell>
                                                 <TableCell className="py-6">
                                                     {getEstadoBadge(solicitud.estado)}
@@ -631,38 +620,7 @@ export default function SolicitudesIndex({
                                                 <TableCell className="py-6">
                                                     {getPrioridadBadge(solicitud.prioridad)}
                                                 </TableCell>
-                                                <TableCell className="py-6">
-                                                    <span className="text-sm text-gray-700 font-semibold">{formatDate(solicitud.fecha_creacion)}</span>
-                                                </TableCell>
-                                                <TableCell className="py-6">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className="h-10 w-10 p-0 bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 rounded-xl shadow-lg border-0 transform hover:scale-105 transition-all duration-300"
-                                                            >
-                                                                <MoreHorizontal className="h-5 w-5 text-gray-700" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent 
-                                                            className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl border border-white/50 p-2"
-                                                            onCloseAutoFocus={(e) => e.preventDefault()}
-                                                        >
-                                                            <DropdownMenuItem
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    e.stopPropagation();
-                                                                    handleEdit(solicitud);
-                                                                }}
-                                                                className="rounded-xl hover:bg-blue-100/80 text-gray-700 font-medium"
-                                                            >
-                                                                <Edit3 className="h-4 w-4 mr-3" />
-                                                                Editar
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </TableCell>
+                                              
                                             </TableRow>
                                         ))}
                                         {proyectosCompletados.length === 0 && (
@@ -680,9 +638,9 @@ export default function SolicitudesIndex({
 
                     {/* Paginación */}
                     <div className="max-w-7xl mx-auto mt-8">
-                       
+
                         {solicitudes?.meta && (
-                            <Pagination 
+                            <Pagination
                                 links={solicitudes.links || []}
                                 meta={solicitudes.meta}
                                 onPageChange={handlePageChange}
